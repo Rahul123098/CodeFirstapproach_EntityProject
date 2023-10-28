@@ -1,0 +1,206 @@
+﻿
+@{
+    ViewBag.Title = "EmployeeIndex";
+}
+
+<h2>EmployeeIndex</h2>
+<table>
+    <tr>
+        <td>Name :</td>
+        <td><input type="text" id="txtname" /></td>
+    </tr>
+
+    <tr>
+        <td>Gender :</td>
+        <td><input type="text" id="txtgender" /></td>
+    </tr>
+
+
+    <tr>
+        <td>Country :</td>
+        <td>
+            <select id="ddlcountry" onchange="SHOWSTATE()">
+                <option value="0">--Choose Country--</option>
+            </select>
+        </td>
+    </tr>
+
+    <tr>
+        <td>State :</td>
+        <td>
+            <select id="ddlstate">
+                <option value="0">--Choose State--</option>
+            </select>
+        </td>
+    </tr>
+
+
+    <tr>
+
+        <td><input type="button" id="btnsave" value="SAVE" onclick="Insert()" /></td>
+    </tr>
+</table>
+
+<table id="tbl" style="background-color:aquamarine;color:black;width:800px">
+    <tr style="background-color:antiquewhite;color:brown">
+        <th>Employee ID</th>
+        <th>Employee Name</th>
+        <th>Employee Gender</th>
+        <th>Employee Country</th>
+        <th>Employee State</th>
+    </tr>
+</table>
+
+
+
+
+<script src="~/Scripts/jquery-3.4.1.min.js"></script>
+
+<script type="text/javascript">
+
+    var IDDD = 0;
+
+    $(document).ready(function () {
+        COUNTRY();
+        SHOW();
+    })
+
+    function Insert() {
+
+        if ($("#btnsave").val() == "SAVE")
+
+        { 
+          $.ajax({
+            url: 'Employee/EmployeeInsert',
+            type: 'post',
+            data: {name:$("#txtname").val(),gender:$("#txtgender").val(),country:$("#ddlcountry").val(),state:$("#ddlstate").val()},
+            success: function () {
+                alert("data Insert")
+                SHOW();
+            },
+            error: function () { 
+
+              alert("data not inserted")
+            }
+           });
+        }
+
+       else if ($("#btnsave").val() == "update") {
+            $.ajax({
+                url: 'Employee/EmployeeUpdate',
+                type: 'post',
+                data: {id:IDDD, name: $("#txtname").val(), gender: $("#txtgender").val(), country: $("#ddlcountry").val(), state: $("#ddlstate").val() },
+                success: function () {
+                    alert("data Updated")
+                    SHOW();
+                },
+                error: function () {
+
+                    alert("data not Updated")
+                }
+            });
+        }
+    }
+
+    function Edit(id) {
+
+        $.ajax({
+            url: 'Employee/EmployeeEdit',
+            type: 'post',
+            data: {A:id  },
+            success: function (data) {
+                $("#txtname").val(data[0].name);
+                $("#txtgender").val(data[0].gender);
+                $("#ddlcountry").val(data[0].country);
+                SHOWSTATE();
+                $("#ddlstate").val(data[0].state);
+                $("#btnsave").val("update")
+                IDDD = id;
+            },
+            error: function () {
+
+                alert("data not edited")
+            }
+        });
+
+    }
+
+    function SHOW() {
+        $.ajax({
+            url: 'Employee/EmployeeShow',
+            type: 'post',
+            data: {},
+            success: function (data) {
+
+                $("#tbl").find("tr:gt(0)").remove()
+                for (var i = 0; i < data.length; i++) {
+
+                    $("#tbl").append('<tr> <td>' + data[i].id + '</td> <td>' + data[i].name + '</td> <td>' + data[i].gender + '</td> <td>' + data[i].cname + '</td> <td>' + data[i].sname + '</td> <td><input type="button" id="btndelete" value="DELETE" onclick="Delete(' + data[i].id + ')" /></td> <td><input type="button" id="btnedit" value="EDIT" onclick="Edit(' + data[i].id + ')" /></td> </tr>')
+                }
+            },
+            error: function () {
+
+                alert("data not inserted")
+            }
+        });
+
+    }
+
+    function COUNTRY() {
+        $.ajax({
+            url: 'Employee/EmployeeCountry',
+            type: 'post',
+            data: {  },
+            success: function (data) {
+                for (var i = 0; i < data.length; i++) {
+
+                    $("#ddlcountry").append($('<option></option>').html(data[i].cname).val(data[i].cid))
+                }
+            },
+            error: function () {
+
+                alert("Country not inserted")
+            }
+        });
+
+    }
+
+    function SHOWSTATE() {
+        $.ajax({
+            url: 'Employee/EmployeeState',
+            type: 'post',
+            data: {A:$("#ddlcountry").val()},
+            success: function (data) {
+                $("#ddlstate").empty();
+                $("#ddlstate").append($('<option></option>').html("--Choose State--").val(0))
+                for (var i = 0; i < data.length; i++) {
+
+                    $("#ddlstate").append($('<option></option>').html(data[i].sname).val(data[i].sid))
+                }
+            },
+            error: function () {
+
+                alert("state not inserted")
+            }
+        });
+
+    }
+
+    function Delete(id) {
+
+        $.ajax({
+            url: 'Employee/EmployeeDelete',
+            type: 'post',
+            data: {A:id},
+            success: function () {
+                alert("data Deleted")
+                SHOW();
+            },
+            error: function () {
+
+                alert("data not Deleted")
+            }
+        });
+
+    }
+</script>
